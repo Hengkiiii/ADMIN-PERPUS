@@ -1,132 +1,153 @@
-'use client'
-import React from 'react';
+import React from "react";
 import { Button, IconButton, Typography } from "@material-tailwind/react";
-import { ArrowRightIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
-
-
-const books = [
-    {
-        title: 'Pemrograman Web Dasar',
-        author: 'John Doe',
-        description: 'Belajar dasar-dasar pemrograman web menggunakan HTnpm runML, CSS, dan JavaScript.',
-        image: '/buku1.jpg',
-
-    },
-    {
-        title: 'Algoritma dan Struktur Data',
-        author: 'Jane Smith',
-        description: 'Pelajari algoritma dan struktur data yang digunakan dalam pengembangan perangkat lunak.',
-        image: '/buku2.jpg',
-    },
-    {
-        title: 'Design Pattern',
-        author: 'Robert Johnson',
-        description: 'Memahami berbagai pola desain dalam pengembangan perangkat lunak untuk meningkatkan kode yang dapat digunakan kembali.',
-        image: '/buku3.jpg',
-    },
-    {
-        title: 'React untuk Pemula',
-        author: 'Sarah Lee',
-        description: 'Pelajari dasar-dasar React, pustaka JavaScript untuk membangun antarmuka pengguna.',
-        image: '/buku1.jpg',
-    },
-    {
-        title: 'Node.js dan Express',
-        author: 'David Kim',
-        description: 'Membangun aplikasi backend menggunakan Node.js dan Express framework.',
-        image: '/buku2.jpg',
-    },
-    {
-        title: 'Pengantar AI',
-        author: 'Emily Brown',
-        description: 'Dasar-dasar kecerdasan buatan dan bagaimana membangun aplikasi AI pertama Anda.',
-        image: '/buku3.jpg',
-    },
-    {
-        title: 'Node.js dan Express',
-        author: 'David Kim',
-        description: 'Membangun aplikasi backend menggunakan Node.js dan Express framework.',
-        image: '/buku2.jpg',
-    },
-    {
-        title: 'Pengantar AI',
-        author: 'Emily Brown',
-        description: 'Dasar-dasar kecerdasan buatan dan bagaimana membangun aplikasi AI pertama Anda.',
-        image: '/buku3.jpg',
-    },
-
-
-
-];
+import { ArrowRightIcon, ArrowLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
+// Hooks
+import useTampilkanDataBuku from "@/hooks/useTampilkanDataBuku";
+import useHapusBuku from "@/hooks/useHapusDataBuku";
+// Import modal
+import ModalKonfirmasiHapusBuku from "@/components/modalKonfirmasiHapusDataBuku";
 
 function Konten() {
-    const [active, setActive] = React.useState(1);
+    const { sedangMemuatTampilkanBuku, daftarBuku } = useTampilkanDataBuku();
+    const { sedangMemuatHapusBuku, hapusBuku } = useHapusBuku();
+    const [halamanAktif, setHalamanAktif] = React.useState(1);
+    const [openDialog, setOpenDialog] = React.useState(false);
+    const [bookToDelete, setBookToDelete] = React.useState(null);
 
-    const getItemProps = (index) =>
-    ({
-        variant: active === index ? "filled" : "text",
-        color: "gray",
-        onClick: () => setActive(index),
-    });
+    const bukuPerHalaman = 10;
+    const indeksMulai = (halamanAktif - 1) * bukuPerHalaman;
+    const indeksAkhir = indeksMulai + bukuPerHalaman;
+    const bukuYangDitampilkan = daftarBuku.slice(indeksMulai, indeksAkhir);
 
-    const next = () => {
-        if (active === 5) return;
-
-        setActive(active + 1);
+    const berikutnya = () => {
+        if (halamanAktif === Math.ceil(daftarBuku.length / bukuPerHalaman)) return;
+        setHalamanAktif(halamanAktif + 1);
     };
 
-    const prev = () => {
-        if (active === 1) return;
+    const sebelumnya = () => {
+        if (halamanAktif === 1) return;
+        setHalamanAktif(halamanAktif - 1);
+    };
 
-        setActive(active - 1);
+    const handleDelete = (book) => {
+        setBookToDelete(book); // Menyimpan buku yang akan dihapus
+        setOpenDialog(true); // Menampilkan modal
+    };
+
+    const confirmDelete = () => {
+        if (bookToDelete) {
+            hapusBuku(bookToDelete.id); // Menghapus buku berdasarkan ID
+            setOpenDialog(false); // Menutup modal setelah konfirmasi
+            setBookToDelete(null); // Reset data buku yang akan dihapus
+        }
     };
 
     return (
-        <div className='h-[950px] flex flex-col justify-center mt-5 px-10'>
-            <Typography className='text-3xl font-bold text-gray-800 mb-8 self-start mx-6'>Daftar Buku</Typography>
-            <div className='grid grid-cols-1 lg:grid-cols-4 gap-x-3 gap-y-8'>
-                {books.map((book, index) => (
-                    <div key={index} className='bg-gray-700 bg-opacity-10 p-6 w-80 h-96 rounded-lg shadow-lg border border-black border-opacity-15'>
-                        <img
-                            src={book.image}
-                            alt={book.title}
-                            className='w-full h-[200px] object-contain rounded-md mb-4'
-                        />
-                        <h2 className='text-xl font-semibold text-gray-800'>{book.title}</h2>
-                        <p className='text-sm text-gray-600 mb-2'>{book.author}</p>
-                        <p className='text-gray-600 mb-4'>{book.description}</p>
-                    </div>
-                ))}
-            </div>
+        <div className="h-auto flex flex-col justify-between mt-5 px-10">
+            <Typography className="text-3xl font-bold text-gray-800 mb-8 self-start mx-6">
+                Daftar Buku
+            </Typography>
 
-            <div className=" my-6 flex self-end gap-4">
+            {sedangMemuatTampilkanBuku ? (
+                <p className="text-gray-700">Memuat data buku...</p>
+            ) : (
+                <div className="overflow-x-auto">
+                    <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-lg">
+                        <thead>
+                            <tr className="bg-gray-100 text-gray-800 uppercase text-sm leading-normal">
+                                <th className="py-3 px-6 text-left">Nama Buku</th>
+                                <th className="py-3 px-6 text-left">Pengarang</th>
+                                <th className="py-3 px-6 text-left">Deskripsi</th>
+                                <th className="py-3 px-6 text-left">Tahun Terbit</th>
+                                <th className="py-3 px-6 text-left">ISBN</th>
+                                <th className="py-3 px-6 text-left">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody className="text-gray-600 text-sm font-light">
+                            {bukuYangDitampilkan.length > 0 ? (
+                                bukuYangDitampilkan.map((book) => (
+                                    <tr
+                                        key={book.id}
+                                        className="border-b border-gray-200 hover:bg-gray-100"
+                                    >
+                                        <td className="py-3 px-6 text-left whitespace-nowrap font-medium text-gray-800">
+                                            {book.Nama_Buku}
+                                        </td>
+                                        <td className="py-3 px-6 text-left">{book.Pengarang}</td>
+                                        <td className="py-3 px-6 text-left truncate max-w-md">
+                                            {book.Deskripsi}
+                                        </td>
+                                        <td className="py-3 px-6 text-left truncate max-w-md">
+                                            {book.Tahun_Terbit}
+                                        </td>
+                                        <td className="py-3 px-6 text-left truncate max-w-md">
+                                            {book.ISBN}
+                                        </td>
+                                        <td className="py-3 px-6 text-left">
+                                            <IconButton
+                                                onClick={() => handleDelete(book)} // Mengarahkan ke handleDelete
+                                                color="red"
+                                                variant="text"
+                                            >
+                                                <TrashIcon className="h-5 w-5" />
+                                            </IconButton>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="6" className="text-center py-4 text-gray-500">
+                                        Tidak ada buku yang tersedia.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+
+            {/* Navigasi Halaman */}
+            <div className="flex justify-center gap-4 my-8">
                 <Button
                     variant="text"
                     className="flex items-center gap-2"
-                    onClick={prev}
-                    disabled={active === 1}
+                    onClick={sebelumnya}
+                    disabled={halamanAktif === 1}
                 >
-                    <ArrowLeftIcon strokeWidth={2} className="h-4 w-4" /> Previous
+                    <ArrowLeftIcon strokeWidth={2} className="h-4 w-4" /> Sebelumnya
                 </Button>
                 <div className="flex items-center gap-2">
-                    <IconButton {...getItemProps(1)}>1</IconButton>
-                    <IconButton {...getItemProps(2)}>2</IconButton>
-                    <IconButton {...getItemProps(3)}>3</IconButton>
-                    <IconButton {...getItemProps(4)}>4</IconButton>
-                    <IconButton {...getItemProps(5)}>5</IconButton>
+                    {Array.from({ length: Math.ceil(daftarBuku.length / bukuPerHalaman) }, (_, index) => (
+                        <IconButton
+                            key={index + 1}
+                            variant={halamanAktif === index + 1 ? "filled" : "text"}
+                            color="gray"
+                            onClick={() => setHalamanAktif(index + 1)}
+                        >
+                            {index + 1}
+                        </IconButton>
+                    ))}
                 </div>
                 <Button
                     variant="text"
                     className="flex items-center gap-2"
-                    onClick={next}
-                    disabled={active === 5}
+                    onClick={berikutnya}
+                    disabled={halamanAktif === Math.ceil(daftarBuku.length / bukuPerHalaman)}
                 >
-                    Next
+                    Berikutnya
                     <ArrowRightIcon strokeWidth={2} className="h-4 w-4" />
                 </Button>
             </div>
-        </div>
 
+            {/* Modal Konfirmasi Hapus Buku */}
+            <ModalKonfirmasiHapusBuku
+                terbuka={openDialog}
+                tertutup={setOpenDialog}
+                bukuYangTerpilih={bookToDelete ? bookToDelete.Nama_Buku : ""}
+                konfirmasiHapusBuku={confirmDelete}
+                sedangMemuatHapus={sedangMemuatHapusBuku}
+            />
+        </div>
     );
 }
 

@@ -1,35 +1,27 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { FaEdit, FaTrash, FaHome } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
+//Hooks
+import useTampilkanAnggota from '@/hooks/useTampilkanAnggota';
+import useHapusAnggota from '@/hooks/useHapusAnggota';
 
-const anggotaData = [
-    { id: 1, nama: "John Doe", email: "john.doe@example.com", prodi: "Informatika" },
-    { id: 2, nama: "Jane Smith", email: "jane.smith@example.com", prodi: "Sistem Informasi" },
-    { id: 3, nama: "Michael Brown", email: "michael.brown@example.com", prodi: "Teknik Komputer" },
-];
-
-const AnggotaRow = ({ index, nama, email, prodi, id, onEdit, onDelete }) => (
+const AnggotaRow = ({ index, namaLengkap, email, prodi, id, onEdit, onDelete }) => (
     <tr className="hover:bg-green-50 transition duration-200">
         <td className="px-6 py-4 text-center text-green-600">{index + 1}</td>
         <td className="px-6 py-4 flex items-center gap-3">
             <img
                 src={`https://i.pravatar.cc/40?u=${id}`}
-                alt={nama}
+                alt={namaLengkap}
                 className="w-10 h-10 rounded-full"
             />
-            <span className="text-blue-700 font-medium">{nama}</span>
+            <span className="text-blue-700 font-medium">{namaLengkap}</span>
         </td>
         <td className="px-6 py-4">{email}</td>
         <td className="px-6 py-4">{prodi}</td>
         <td className="px-6 py-4 flex gap-3 justify-center">
-            <button
-                onClick={() => onEdit(id)}
-                className="text-blue-500 hover:text-blue-700 transition duration-200"
-            >
-                <FaEdit size={18} />
-            </button>
+
             <button
                 onClick={() => onDelete(id)}
                 className="text-red-500 hover:text-red-700 transition duration-200"
@@ -42,21 +34,27 @@ const AnggotaRow = ({ index, nama, email, prodi, id, onEdit, onDelete }) => (
 
 const AnggotaTable = () => {
     const router = useRouter();
+    const { sedangMemuat, daftarAnggota } = useTampilkanAnggota();  // Using the custom hook
+    const { sedangMemuat: sedangMemuatHapus, hapusAnggota } = useHapusAnggota(); // Using the custom hook for deletion
 
     const handleEdit = (id) => {
         alert(`Sunting data anggota dengan ID: ${id}`);
     };
 
-    const handleDelete = (id) => {
+    const handleDelete = async (id) => {
         const confirm = window.confirm(`Yakin ingin menghapus anggota dengan ID: ${id}?`);
         if (confirm) {
-            alert(`Data anggota dengan ID ${id} telah dihapus.`);
+            await hapusAnggota(id);  // Call the hook to delete the member
         }
     };
 
     const handleBackToHome = () => {
         router.push("/beranda");
     };
+
+    if (sedangMemuat) {
+        return <div>Memuat data anggota...</div>;
+    }
 
     return (
         <div className="p-8">
@@ -86,18 +84,32 @@ const AnggotaTable = () => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                        {anggotaData.map((anggota, index) => (
-                            <AnggotaRow
-                                key={anggota.id}
-                                index={index}
-                                {...anggota}
-                                onEdit={handleEdit}
-                                onDelete={handleDelete}
-                            />
-                        ))}
+                        {daftarAnggota.length === 0 ? (
+                            <tr>
+                                <td colSpan="5" className="text-center py-4">
+                                    Tidak ada anggota yang ditemukan.
+                                </td>
+                            </tr>
+                        ) : (
+                            daftarAnggota.map((anggota, index) => (
+                                <AnggotaRow
+                                    key={anggota.id}
+                                    index={index}
+                                    {...anggota}
+                                    onEdit={handleEdit}
+                                    onDelete={handleDelete}
+                                />
+                            ))
+                        )}
                     </tbody>
                 </table>
             </div>
+
+            {sedangMemuatHapus && (
+                <div className="absolute inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center">
+                    <div className="text-white">Memproses penghapusan...</div>
+                </div>
+            )}
         </div>
     );
 };

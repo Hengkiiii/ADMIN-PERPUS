@@ -1,7 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { AiOutlineHome, AiOutlineUser, AiOutlineLogout } from 'react-icons/ai';
-import { FaUserFriends } from 'react-icons/fa';
+import { FaUserFriends, FaPlus } from 'react-icons/fa';
 import { List, ListItem, ListItemPrefix, } from "@material-tailwind/react";
 
 const Sidebar = () => {
@@ -13,6 +13,9 @@ const Sidebar = () => {
 
     const navigateToAnggota = () => {
         router.push('/anggota');
+    };
+    const navigateToTambahData = () => {
+        router.push('/tambahdata');
     };
 
     return (
@@ -55,6 +58,16 @@ const Sidebar = () => {
                         </ListItemPrefix>
                         Anggota
                     </ListItem>
+                    <ListItem
+                        onClick={navigateToTambahData}
+                        className="group rounded-none py-1.5 px-3 text-sm font-normal text-white hover:bg-blue-700 hover:text-white focus:bg-blue-700 focus:text-white"
+                    >
+                        <ListItemPrefix>
+                            <FaPlus className="h-5 w-5 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12" />
+                        </ListItemPrefix>
+                        Tambah Data
+                    </ListItem>
+
                 </List>
             </div>
 
