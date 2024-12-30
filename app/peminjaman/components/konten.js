@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FaPencilAlt } from 'react-icons/fa';
+import { FaPencilAlt, FaCheck, FaTimes } from 'react-icons/fa';
 import {
     Card,
     CardHeader,
@@ -23,16 +23,17 @@ const TABS = [
     { label: "Semuanya", value: "semuanya" },
     { label: "Dipinjam", value: "dipinjam" },
     { label: "Dikembalikan", value: "dikembalikan" },
+    { label: "Pending", value: "pending" },
 ];
 
 const TABLE_HEAD = ["Anggota", "Judul Buku", "Status", "Tanggal", "Aksi"];
 
 const TABLE_ROWS = [
-    { img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-3.jpg", name: "John Michael", judul: "React for Beginners", dipinjam: true, date: "23/04/18" },
-    { img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-2.jpg", name: "Alexa Liras", judul: "Advanced JavaScript", dipinjam: false, date: "23/04/18" },
-    { img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-1.jpg", name: "Laurent Perrier", judul: "Node.js in Action", dipinjam: false, date: "19/09/17" },
-    { img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-4.jpg", name: "Michael Levi", judul: "CSS Mastery", dipinjam: true, date: "24/12/08" },
-    { img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-5.jpg", name: "Richard Gran", judul: "HTML & CSS for Web Developers", dipinjam: false, date: "04/10/21" },
+    { img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-3.jpg", name: "John Michael", judul: "React for Beginners", status: "pending", date: "23/04/18" },
+    { img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-2.jpg", name: "Alexa Liras", judul: "Advanced JavaScript", status: "dipinjam", date: "23/04/18" },
+    { img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-1.jpg", name: "Laurent Perrier", judul: "Node.js in Action", status: "dikembalikan", date: "19/09/17" },
+    { img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-4.jpg", name: "Michael Levi", judul: "CSS Mastery", status: "pending", date: "24/12/08" },
+    { img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-5.jpg", name: "Richard Gran", judul: "HTML & CSS for Web Developers", status: "dikembalikan", date: "04/10/21" },
 ];
 
 const MembersTable = () => {
@@ -41,6 +42,10 @@ const MembersTable = () => {
 
     const handleBackClick = () => {
         router.push('/beranda');
+    };
+
+    const handleApproval = (name, approval) => {
+        alert(`${approval ? "Disetujui" : "Ditolak"}: Permintaan dari ${name}`);
     };
 
     return (
@@ -57,7 +62,6 @@ const MembersTable = () => {
             </CardHeader>
             <CardBody className="overflow-auto px-4 py-6">
                 <div className="mb-4 flex items-center gap-4">
-                    <Input label="Cari Anggota" placeholder="Masukkan nama anggota..." className="flex-grow" />
                 </div>
                 <Tabs value={activeTab} className="mb-6">
                     <TabsHeader>
@@ -87,7 +91,7 @@ const MembersTable = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {TABLE_ROWS.map(({ img, name, judul, dipinjam, date }, index) => (
+                        {TABLE_ROWS.filter(({ status }) => activeTab === "semuanya" || status === activeTab).map(({ img, name, judul, status, date }, index) => (
                             <tr
                                 key={name}
                                 className={`hover:bg-gray-50 ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}
@@ -117,8 +121,8 @@ const MembersTable = () => {
                                     <Chip
                                         variant="ghost"
                                         size="sm"
-                                        value={dipinjam ? "Dipinjam" : "Dikembalikan"}
-                                        color={dipinjam ? "green" : "blue-gray"}
+                                        value={status === "pending" ? "Pending Persetujuan" : status === "dipinjam" ? "Dipinjam" : "Dikembalikan"}
+                                        color={status === "pending" ? "orange" : status === "dipinjam" ? "green" : "blue-gray"}
                                         className="capitalize font-medium"
                                     />
                                 </td>
@@ -132,11 +136,34 @@ const MembersTable = () => {
                                     </Typography>
                                 </td>
                                 <td className="px-6 py-4 border-b border-gray-200">
-                                    <Tooltip content="Edit User">
-                                        <IconButton variant="text" color="blue-gray">
-                                            <FaPencilAlt className="h-4 w-4" />
-                                        </IconButton>
-                                    </Tooltip>
+                                    {status === "pending" ? (
+                                        <div className="flex items-center gap-2">
+                                            <Tooltip content="Setujui">
+                                                <IconButton
+                                                    variant="text"
+                                                    color="green"
+                                                    onClick={() => handleApproval(name, true)}
+                                                >
+                                                    <FaCheck className="h-4 w-4" />
+                                                </IconButton>
+                                            </Tooltip>
+                                            <Tooltip content="Tolak">
+                                                <IconButton
+                                                    variant="text"
+                                                    color="red"
+                                                    onClick={() => handleApproval(name, false)}
+                                                >
+                                                    <FaTimes className="h-4 w-4" />
+                                                </IconButton>
+                                            </Tooltip>
+                                        </div>
+                                    ) : (
+                                        <Tooltip content="Edit User">
+                                            <IconButton variant="text" color="blue-gray">
+                                                <FaPencilAlt className="h-4 w-4" />
+                                            </IconButton>
+                                        </Tooltip>
+                                    )}
                                 </td>
                             </tr>
                         ))}

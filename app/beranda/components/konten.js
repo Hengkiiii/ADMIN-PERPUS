@@ -57,6 +57,7 @@ function Konten() {
                             <tr className="bg-gray-100 text-gray-800 uppercase text-sm leading-normal">
                                 <th className="py-3 px-6 text-left">Nama Buku</th>
                                 <th className="py-3 px-6 text-left">Pengarang</th>
+                                <th className="py-3 px-6 text-left">Stok</th>
                                 <th className="py-3 px-6 text-left">Deskripsi</th>
                                 <th className="py-3 px-6 text-left">Tahun Terbit</th>
                                 <th className="py-3 px-6 text-left">ISBN</th>
@@ -74,6 +75,7 @@ function Konten() {
                                             {book.Nama_Buku}
                                         </td>
                                         <td className="py-3 px-6 text-left">{book.Pengarang}</td>
+                                        <td className="py-3 px-6 text-left">{book.Stok}</td>
                                         <td className="py-3 px-6 text-left truncate max-w-md">
                                             {book.Deskripsi}
                                         </td>
